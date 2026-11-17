@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Countdown Timer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.95; transform: scale(1.02); }
+        }
+        .timer-alert {
+            animation: pulse-subtle 1s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+
+    <div class="w-full max-w-xl bg-slate-800/80 backdrop-blur-xl border border-slate-700/60 rounded-3xl shadow-2xl p-6 sm:p-8 space-y-8">
+        
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-sky-300 to-emerald-400 bg-clip-text text-transparent">
+                Χρονομετρητής Αντίστροφης Μέτρησης
+            </h1>
+            <p class="text-slate-400 text-sm sm:text-base">Οργανώστε τον χρόνο σας, αποθηκεύστε τις αγαπημένες σας μετρήσεις.</p>
+        </div>
+
+        <!-- Timer Display -->
+        <div class="relative flex flex-col items-center justify-center py-8 bg-slate-900/60 rounded-2xl border border-slate-700/40 shadow-inner">
+            <!-- Circular Progress Ring (Decorative Background) -->
+            <div id="timerContainer" class="flex items-center space-x-2 sm:space-x-4 text-5xl sm:text-7xl font-extrabold tracking-wider font-mono text-white transition-colors duration-300">
+                <div class="flex flex-col items-center">
+                    <span id="hoursDisplay">00</span>
+                    <span class="text-xs uppercase font-sans tracking-widest text-slate-400 mt-1">Ώρες</span>
+                </div>
+                <span class="text-indigo-400 -mt-6">:</span>
+                <div class="flex flex-col items-center">
+                    <span id="minutesDisplay">05</span>
+                    <span class="text-xs uppercase font-sans tracking-widest text-slate-400 mt-1">Λεπτά</span>
+                </div>
+                <span class="text-indigo-400 -mt-6">:</span>
+                <div class="flex flex-col items-center">
+                    <span id="secondsDisplay">00</span>
+                    <span class="text-xs uppercase font-sans tracking-widest text-slate-400 mt-1">Δευτ.</span>
+                </div>
+            </div>
+
+            <!-- Status Badge -->
+            <div id="statusBadge" class="mt-4 px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+                Έτοιμο
+            </div>
+        </div>
+
+        <!-- Input Form for Custom Time -->
+        <div class="grid grid-cols-3 gap-3">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Ώρες</label>
+                <input type="number" id="inputHours" min="0" max="99" value="0" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-center text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Λεπτά</label>
+                <input type="number" id="inputMinutes" min="0" max="59" value="5" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-center text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Δευτερόλεπτα</label>
+                <input type="number" id="inputSeconds" min="0" max="59" value="0" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-center text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+            </div>
+        </div>
+
+        <!-- Controls / Action Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-3">
+            <button id="startBtn" class="flex-1 min-w-[100px] bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-emerald-900/30 transition-all flex items-center justify-center space-x-2 active:scale-95">
+                <i class="fa-solid fa-play"></i>
+                <span>Εκκίνηση</span>
+            </button>
+            <button id="pauseBtn" disabled class="flex-1 min-w-[100px] bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-amber-900/30 transition-all flex items-center justify-center space-x-2 active:scale-95">
+                <i class="fa-solid fa-pause"></i>
+                <span>Παύση</span>
+            </button>
+            <button id="resetBtn" class="flex-1 min-w-[100px] bg-rose-600 hover:bg-rose-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-rose-900/30 transition-all flex items-center justify-center space-x-2 active:scale-95">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>Επαναφορά</span>
+            </button>
+        </div>
+
+        <!-- Presets / Saved Timers Section -->
+        <div class="space-y-3 pt-4 border-t border-slate-700/60">
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-2">
+                    <i class="fa-solid fa-bookmark text-indigo-400"></i>
+                    <span>Αποθηκευμένες / Αγαπημένες Μετρήσεις</span>
+                </h2>
+                <button id="savePresetBtn" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center space-x-1 transition-colors">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Αποθήκευση Τρέχουσας</span>
+                </button>
+            </div>
+            
+            <!-- Preset List Container -->
+            <div id="presetList" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1">
+                <!-- Dynamically populated presets -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Message Modal / Toast -->
+    <div id="messageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+            <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Ο Χρόνος Έληξε!</h3>
+            <p id="modalMessageText" class="text-slate-300 text-sm">Η αντίστροφη μέτρηση ολοκληρώθηκε επιτυχώς.</p>
+            <button id="closeModalBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl transition-colors">
+                Εντάξει
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const hoursDisplay = document.getElementById('hoursDisplay');
+            const minutesDisplay = document.getElementById('minutesDisplay');
+            const secondsDisplay = document.getElementById('secondsDisplay');
+            
+            const inputHours = document.getElementById('inputHours');
+            const inputMinutes = document.getElementById('inputMinutes');
+            const inputSeconds = document.getElementById('inputSeconds');
+            
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const savePresetBtn = document.getElementById('savePresetBtn');
+            
+            const statusBadge = document.getElementById('statusBadge');
+            const timerContainer = document.getElementById('timerContainer');
+            const presetList = document.getElementById('presetList');
+            
+            const messageModal = document.getElementById('messageModal');
+            const modalMessageText = document.getElementById('modalMessageText');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+
+            // State variables
+            let totalSeconds = 300; // Default 5 minutes
+            let remainingSeconds = 300;
+            let timerInterval = null;
+            let isRunning = false;
+            let isPaused = false;
+
+            // Default presets if none in localStorage
+            const defaultPresets = [
+                { name: 'Pomodoro (25λ)', seconds: 1500 },
+                { name: 'Διάλειμμα (5λ)', seconds: 300 },
+                { name: 'Γρήγορο (1λ)', seconds: 60 },
+                { name: 'Τσάι (3λ)', seconds: 180 }
+            ];
+
+            // Load presets from localStorage
+            function getStoredPresets() {
+                const stored = localStorage.getItem('countdown_presets');
+                if (stored) {
+                    try {
+                        return JSON.parse(stored);
+                    } catch (e) {
+                        return defaultPresets;
+                    }
+                }
+                return defaultPresets;
+            }
+
+            function savePresetsToStorage(presets) {
+                localStorage.setItem('countdown_presets', JSON.stringify(presets));
+            }
+
+            // Render Presets
+            function renderPresets() {
+                const presets = getStoredPresets();
+                presetList.innerHTML = '';
+                
+                presets.forEach((preset, index) => {
+                    const btn = document.createElement('div');
+                    btn.className = "flex items-center justify-between bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-indigo-500/50 rounded-xl p-2.5 transition-all cursor-pointer group";
+                    
+                    const formatTimeShort = (sec) => {
+                        const h = Math.floor(sec / 3600);
+                        const m = Math.floor((sec % 3600) / 60);
+                        const s = sec % 60;
+                        if (h > 0) return `${h}ώ ${m}λ`;
+                        if (m > 0 && s > 0) return `${m}λ ${s}δ`;
+                        if (m > 0) return `${m} λεπτά`;
+                        return `${s} δευτ.`;
+                    };
+
+                    btn.innerHTML = `
+                        <div class="truncate pr-2">
+                            <p class="text-xs font-semibold text-slate-200 truncate group-hover:text-indigo-300">${preset.name}</p>
+                            <p class="text-[10px] text-slate-400 font-mono">${formatTimeShort(preset.seconds)}</p>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button title="Φόρτωση" class="load-preset text-indigo-400 hover:text-indigo-300 p-1 rounded transition-colors" data-seconds="${preset.seconds}">
+                                <i class="fa-solid fa-play text-xs"></i>
+                            </button>
+                            <button title="Διαγραφή" class="delete-preset text-rose-400 hover:text-rose-300 p-1 rounded transition-colors" data-index="${index}">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                    presetList.appendChild(btn);
+                });
+
+                // Attach event listeners to preset items
+                presetList.querySelectorAll('.load-preset').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const secs = parseInt(btn.getAttribute('data-seconds'));
+                        loadSecondsToTimer(secs);
+                    });
+                });
+
+                presetList.querySelectorAll('.delete-preset').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const idx = parseInt(btn.getAttribute('data-index'));
+                        let presets = getStoredPresets();
+                        presets.splice(idx, 1);
+                        savePresetsToStorage(presets);
+                        renderPresets();
+                    });
+                });
+            }
+
+            function loadSecondsToTimer(secs) {
+                if (isRunning) stopTimer();
+                totalSeconds = secs;
+                remainingSeconds = secs;
+                updateInputsFromSeconds(secs);
+                updateDisplay();
+                setStatus('Έτοιμο', 'bg-slate-800 text-slate-400 border-slate-700');
+            }
+
+            function updateInputsFromSeconds(secs) {
+                const h = Math.floor(secs / 3600);
+                const m = Math.floor((secs % 3600) / 60);
+                const s = secs % 60;
+                inputHours.value = h;
+                inputMinutes.value = m;
+                inputSeconds.value = s;
+            }
+
+            function getSecondsFromInputs() {
+                const h = parseInt(inputHours.value) || 0;
+                const m = parseInt(inputMinutes.value) || 0;
+                const s = parseInt(inputSeconds.value) || 0;
+                return (h * 3600) + (m * 60) + s;
+            }
+
+            function updateDisplay() {
+                const h = Math.floor(remainingSeconds / 3600);
+                const m = Math.floor((remainingSeconds % 3600) / 60);
+                const s = remainingSeconds % 60;
+
+                hoursDisplay.textContent = String(h).padStart(2, '0');
+                minutesDisplay.textContent = String(m).padStart(2, '0');
+                secondsDisplay.textContent = String(s).padStart(2, '0');
+
+                // Update document title dynamically
+                if (isRunning) {
+                    document.title = `(${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}) Χρονομετρητής`;
+                } else {
+                    document.title = 'Modern Countdown Timer';
+                }
+            }
+
+            function setStatus(text, classNames) {
+                statusBadge.textContent = text;
+                statusBadge.className = `mt-4 px-3 py-1 rounded-full text-xs font-medium border ${classNames}`;
+            }
+
+            function startTimer() {
+                if (!isRunning && !isPaused) {
+                    const secs = getSecondsFromInputs();
+                    if (secs <= 0) {
+                        showModal("Παρακαλώ εισάγετε έγκυρο χρόνο μεγαλύτερο από 0.");
+                        return;
+                    }
+                    totalSeconds = secs;
+                    remainingSeconds = secs;
+                }
+
+                isRunning = true;
+                isPaused = false;
+                
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                inputHours.disabled = true;
+                inputMinutes.disabled = true;
+                inputSeconds.disabled = true;
+
+                setStatus('Σε εξέλιξη...', 'bg-indigo-950 text-indigo-300 border-indigo-700/50');
+                timerContainer.classList.remove('timer-alert');
+
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    if (remainingSeconds > 0) {
+                        remainingSeconds--;
+                        updateDisplay();
+                    } else {
+                        completeTimer();
+                    }
+                }, 1000);
+            }
+
+            function pauseTimer() {
+                if (!isRunning) return;
+                clearInterval(timerInterval);
+                isRunning = false;
+                isPaused = true;
+
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fa-solid fa-play"></i><span>Συνέχεια</span>';
+                pauseBtn.disabled = true;
+
+                setStatus('Σε παύση', 'bg-amber-950 text-amber-300 border-amber-700/50');
+            }
+
+            function resetTimer() {
+                clearInterval(timerInterval);
+                isRunning = false;
+                isPaused = false;
+
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fa-solid fa-play"></i><span>Εκκίνηση</span>';
+                pauseBtn.disabled = true;
+                
+                inputHours.disabled = false;
+                inputMinutes.disabled = false;
+                inputSeconds.disabled = false;
+
+                const secs = getSecondsFromInputs();
+                totalSeconds = secs;
+                remainingSeconds = secs;
+                updateDisplay();
+
+                setStatus('Έτοιμο', 'bg-slate-800 text-slate-400 border-slate-700');
+                timerContainer.classList.remove('timer-alert');
+            }
+
+            function completeTimer() {
+                clearInterval(timerInterval);
+                isRunning = false;
+                isPaused = false;
+
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fa-solid fa-play"></i><span>Εκκίνηση</span>';
+                pauseBtn.disabled = true;
+                
+                inputHours.disabled = false;
+                inputMinutes.disabled = false;
+                inputSeconds.disabled = false;
+
+                setStatus('Ολοκληρώθηκε!', 'bg-emerald-950 text-emerald-300 border-emerald-700/50');
+                timerContainer.classList.add('timer-alert');
+
+                showModal("Ο χρόνος σας έληξε επιτυχώς!");
+            }
+
+            function showModal(text) {
+                modalMessageText.textContent = text;
+                messageModal.classList.remove('hidden');
+                messageModal.classList.add('flex');
+            }
+
+            function hideModal() {
+                messageModal.classList.remove('flex');
+                messageModal.classList.add('hidden');
+            }
+
+            // Event Listeners for inputs to update timer in real-time if not running
+            [inputHours, inputMinutes, inputSeconds].forEach(input => {
+                input.addEventListener('input', () => {
+                    if (!isRunning && !isPaused) {
+                        const secs = getSecondsFromInputs();
+                        remainingSeconds = secs;
+                        totalSeconds = secs;
+                        updateDisplay();
+                    }
+                });
+            });
+
+            startBtn.addEventListener('click', startTimer);
+            pauseBtn.addEventListener('click', pauseTimer);
+            resetBtn.addEventListener('click', resetTimer);
+
+            savePresetBtn.addEventListener('click', () => {
+                const currentSecs = getSecondsFromInputs();
+                if (currentSecs <= 0) {
+                    showModal("Δεν μπορείτε να αποθηκεύσετε μηδενικό χρόνο.");
+                    return;
+                }
+                const presetName = prompt("Δώστε ένα όνομα για αυτή την αντίστροφη μέτρηση:", "Ημέρα Μελέτης");
+                if (presetName && presetName.trim() !== "") {
+                    let presets = getStoredPresets();
+                    presets.push({ name: presetName.trim(), seconds: currentSecs });
+                    savePresetsToStorage(presets);
+                    renderPresets();
+                }
+            });
+
+            closeModalBtn.addEventListener('click', hideModal);
+
+            // Initial Setup
+            if (!localStorage.getItem('countdown_presets')) {
+                savePresetsToStorage(defaultPresets);
+            }
+            renderPresets();
+            loadSecondsToTimer(300); // Initialize with 5 mins
+        });
+    </script>
+</body>
+</html>
